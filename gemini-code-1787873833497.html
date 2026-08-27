@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>2026 Elite PPR Draft Board & AI Advisor</title>
+  <style>
+    :root {
+      --bg-dark: #080c14;
+      --surface: rgba(18, 25, 41, 0.82);
+      --surface-border: rgba(255, 255, 255, 0.08);
+      --surface-active: rgba(28, 38, 62, 0.95);
+      --primary: #38bdf8;
+      --primary-glow: rgba(56, 189, 248, 0.28);
+      --text-main: #f8fafc;
+      --text-sub: #94a3b8;
+      --gold: #fbbf24;
+      --gold-bg: rgba(251, 191, 36, 0.12);
+      --gold-border: rgba(251, 191, 36, 0.35);
+      --steal-green: #10b981;
+      --steal-bg: rgba(16, 185, 129, 0.14);
+      --steal-border: rgba(16, 185, 129, 0.35);
+      --reach-red: #f43f5e;
+      --reach-bg: rgba(244, 63, 94, 0.12);
+      --warn-orange: #f97316;
+      --warn-bg: rgba(249, 115, 22, 0.15);
+      --qb: #f43f5e;
+      --rb: #3b82f6;
+      --wr: #10b981;
+      --te: #f59e0b;
+      --k: #a855f7;
+      --dst: #64748b;
+      --taken-bg: rgba(15, 23, 42, 0.38);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+    
+    body {
+      background: radial-gradient(circle at 50% 0%, #172554 0%, var(--bg-dark) 48%);
+      background-attachment: fixed;
+      color: var(--text-main);
+      padding-bottom: 95px;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      background: rgba(8, 12, 20, 0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--surface-border);
+      padding: env(safe-area-inset-top, 10px) 14px 10px 14px;
+      z-index: 100;
+    }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .search-wrap {
+      flex: 1;
+      position: relative;
+    }
+
+    .search-bar {
+      width: 100%;
+      padding: 9px 14px 9px 34px;
+      border-radius: 12px;
+      border: 1px solid var(--surface-border);
+      background: var(--surface);
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+    .search-bar:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-glow);
+    }
+    .search-icon {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-sub);
+      font-size: 13px;
+      pointer-events: none;
+    }
+
+    .icon-btn {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      color: var(--text-main);
+      padding: 8px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: transform 0.1s, background 0.2s;
+    }
+    .icon-btn:active { transform: scale(0.95); background: var(--surface-active); }
+
+    /* Turn Status Strip */
+    .turn-status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--surface-border);
+      border-radius: 10px;
+      padding: 6px 10px;
+      margin-bottom: 8px;
+      font-size: 11.5px;
+    }
+    .turn-stat { display: flex; align-items: center; gap: 4px; color: var(--text-sub); }
+    .turn-stat b { color: var(--primary); }
+
+    .filters-scroll {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding-bottom: 2px;
+    }
+    .filters-scroll::-webkit-scrollbar { display: none; }
+
+    .filter-chip {
+      padding: 5px 12px;
+      border-radius: 16px;
+      border: 1px solid var(--surface-border);
+      background: var(--surface);
+      color: var(--text-sub);
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .filter-chip.active {
+      background: var(--primary);
+      color: #04101e;
+      border-color: var(--primary);
+      box-shadow: 0 2px 10px var(--primary-glow);
+    }
+
+    /* Live Recommendation AI Banner */
+    .smart-banner {
+      margin: 10px 14px 4px 14px;
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%);
+      border: 1px solid var(--gold-border);
+      border-radius: 14px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      box-shadow: 0 4px 20px rgba(251, 191, 36, 0.08);
+      cursor: pointer;
+      transition: transform 0.15s, border-color 0.2s;
+    }
+    .smart-banner:active { transform: scale(0.985); }
+    .smart-banner-content {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 0;
+      flex: 1;
+    }
+    .smart-banner-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10.5px;
+      font-weight: 800;
+      color: var(--gold);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .smart-banner-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .smart-banner-sub {
+      font-size: 11.5px;
+      color: var(--text-sub);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .info-pill {
+      font-size: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 1px 6px;
+      border-radius: 4px;
+      color: #e2e8f0;
+    }
+
+    .smart-banner-btn {
+      background: var(--gold);
+      color: #000;
+      padding: 8px 12px;
+      border-radius: 9px;
+      border: none;
+      font-size: 11.5px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .smart-banner-btn:active { transform: scale(0.95); }
+
+    /* Modals */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 200;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; animation: fadeIn 0.2s ease; }
+    
+    .modal-sheet {
+      background: #0f172a;
+      border: 1px solid var(--surface-border);
+      border-radius: 20px 20px 0 0;
+      width: 100%;
+      max-width: 580px;
+      max-height: 88vh;
+      padding: 20px 18px env(safe-area-inset-bottom, 20px) 18px;
+      overflow-y: auto;
+      box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
+      animation: slideUp 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .modal-handle {
+      width: 36px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 2px;
+      margin: 0 auto 16px auto;
+    }
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .modal-title { font-size: 17px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 6px; }
+    .close-btn { background: rgba(255,255,255,0.1); border: none; color: #fff; width: 28px; height: 28px; border-radius: 50%; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    
+    .explain-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--surface-border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+    }
+    .explain-card h4 { font-size: 13px; font-weight: 800; margin-bottom: 5px; display: flex; align-items: center; gap: 6px; }
+    .explain-card p { font-size: 12px; color: var(--text-sub); line-height: 1.45; }
+    
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 12px; font-weight: 700; color: var(--text-sub); margin-bottom: 5px; }
+    .input-field {
+      width: 100%;
+      padding: 9px 12px;
+      background: rgba(0,0,0,0.35);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      color: #fff;
+      font-size: 13px;
+      outline: none;
+    }
+    .input-field:focus { border-color: var(--primary); }
+
+    /* Needs Tracker */
+    .needs-bar {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 8px 14px;
+      scrollbar-width: none;
+      background: rgba(15, 23, 42, 0.5);
+      border-bottom: 1px solid var(--surface-border);
+    }
+    .needs-bar::-webkit-scrollbar { display: none; }
+    .need-pill {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-sub);
+      border: 1px solid var(--surface-border);
+      white-space: nowrap;
+    }
+    .need-pill.filled {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    /* Player Cards */
+    .list-container { padding: 10px 14px; }
+    
+    .player-card {
+      background: var(--surface);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--surface-border);
+      border-radius: 14px;
+      padding: 11px 12px;
+      margin-bottom: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: transform 0.15s ease, opacity 0.2s ease, border-color 0.2s ease;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    .player-card:active { transform: scale(0.985); }
+    
+    .player-card.taken {
+      opacity: 0.28;
+      background: var(--taken-bg);
+      border-color: transparent;
+      box-shadow: none;
+    }
+    .player-card.taken .p-name { text-decoration: line-through; color: var(--text-sub); }
+    
+    .player-card.mine-card {
+      border-color: rgba(16, 185, 129, 0.4);
+      background: rgba(16, 185, 129, 0.08);
+    }
+
+    .player-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+      min-width: 0;
+    }
+    .rank-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 30px;
+    }
+    .adp-num { font-size: 13px; font-weight: 800; color: #fff; }
+    .adp-lbl { font-size: 8px; text-transform: uppercase; color: var(--text-sub); font-weight: 700; }
+
+    .pos-tag {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 7px;
+      border-radius: 8px;
+      color: #fff;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+    .pos-QB { background: var(--qb); }
+    .pos-RB { background: var(--rb); }
+    .pos-WR { background: var(--wr); }
+    .pos-TE { background: var(--te); }
+    .pos-K { background: var(--k); }
+    .pos-DST { background: var(--dst); }
+
+    .p-info { display: flex; flex-direction: column; min-width: 0; }
+    .p-header-line { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+    .p-name { font-size: 14.5px; font-weight: 700; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    
+    .tier-badge {
+      font-size: 9.5px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-sub);
+    }
+    .val-badge {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+    }
+    .val-great-steal { background: var(--steal-bg); color: var(--steal-green); border: 1px solid var(--steal-border); }
+    .val-slight-steal { background: rgba(16, 185, 129, 0.08); color: #34d399; }
+    .val-reach { background: var(--reach-bg); color: var(--reach-red); }
+
+    .p-sub { font-size: 11.5px; color: var(--text-sub); margin-top: 3px; display: flex; align-items: center; gap: 6px; }
+
+    .btn-group { display: flex; gap: 6px; }
+    .btn-action {
+      padding: 8px 11px;
+      border-radius: 10px;
+      border: none;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-take { background: rgba(255, 255, 255, 0.08); color: #cbd5e1; }
+    .btn-take:active { background: rgba(255, 255, 255, 0.15); }
+    .btn-draft { background: #059669; color: #fff; box-shadow: 0 2px 8px rgba(5, 150, 105, 0.4); }
+    .btn-draft:active { background: #047857; transform: scale(0.95); }
+    .btn-undo { background: rgba(255, 255, 255, 0.1); color: var(--text-sub); font-size: 11px; }
+
+    /* Roster View */
+    #roster-view { display: none; padding: 14px; }
+    .conflict-alert-box {
+      background: var(--warn-bg);
+      border: 1px solid rgba(249, 115, 22, 0.4);
+      border-radius: 12px;
+      padding: 10px 14px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: fadeIn 0.3s ease;
+    }
+    .conflict-alert-icon { font-size: 20px; }
+    .conflict-alert-text { font-size: 12.5px; color: #fdba74; font-weight: 600; line-height: 1.35; }
+
+    .section-head { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-sub); margin: 16px 0 8px 4px; }
+    .roster-slot-card {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 12px;
+      padding: 10px 14px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .roster-slot-card.has-conflict {
+      border-color: rgba(249, 115, 22, 0.45);
+      background: rgba(249, 115, 22, 0.06);
+    }
+    .slot-label { font-size: 12px; font-weight: 800; color: var(--primary); width: 55px; }
+    .empty-text { font-size: 13px; color: var(--text-sub); font-style: italic; }
+
+    .bye-warn-tag {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 5px;
+      background: rgba(249, 115, 22, 0.2);
+      color: #fb923c;
+      border: 1px solid rgba(249, 115, 22, 0.35);
+      margin-left: 6px;
+    }
+
+    /* Live AI Box */
+    .ai-live-box {
+      background: rgba(56, 189, 248, 0.08);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 12px;
+      padding: 14px;
+      margin-top: 14px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: #e2e8f0;
+      white-space: pre-line;
+    }
+
+    /* Bottom Nav */
+    .bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: calc(58px + env(safe-area-inset-bottom, 0px));
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      background: rgba(8, 12, 20, 0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid var(--surface-border);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 100;
+    }
+    .nav-tab {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      color: var(--text-sub);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .nav-tab.active { color: var(--primary); }
+    .nav-icon { font-size: 18px; }
+    #csv-file { display: none; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="top-bar">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="search" class="search-bar" placeholder="Search player, team, pos..." oninput="render()" />
+      </div>
+      <button class="icon-btn" onclick="document.getElementById('csv-file').click()" aria-label="Upload CSV">📥 CSV</button>
+      <button class="icon-btn" onclick="resetBoard()" aria-label="Reset Board">↺</button>
+      <button class="icon-btn" style="color:var(--gold);" onclick="toggleHelpModal(true)" aria-label="Settings">⚙️ Settings</button>
+      <input type="file" id="csv-file" accept=".csv" onchange="importCSV(event)" />
+    </div>
+
+    <!-- Live Turn & Gap Status -->
+    <div class="turn-status-bar">
+      <div class="turn-stat">Pick: <b id="stat-current-pick">#1</b> (<span id="stat-current-round">Rd 1</span>)</div>
+      <div class="turn-stat">Next: <b id="stat-next-picks">#1, #32</b></div>
+      <div class="turn-stat">Gap: <b id="stat-turn-gap">0 picks</b></div>
+    </div>
+    
+    <div class="filters-scroll">
+      <button class="filter-chip active" onclick="setPosFilter('ALL')">ALL</button>
+      <button class="filter-chip" onclick="setPosFilter('WR')">WR</button>
+      <button class="filter-chip" onclick="setPosFilter('RB')">RB</button>
+      <button class="filter-chip" onclick="setPosFilter('TE')">TE</button>
+      <button class="filter-chip" onclick="setPosFilter('QB')">QB</button>
+      <button class="filter-chip" onclick="setPosFilter('K')">K</button>
+      <button class="filter-chip" onclick="setPosFilter('DST')">DST</button>
+      <button class="filter-chip" onclick="toggleHideTaken()" id="btn-hide">Hide Taken</button>
+    </div>
+  </header>
+
+  <!-- Auto Recommendation Banner -->
+  <div id="smart-recommendation-container"></div>
+
+  <!-- Needs Tracker -->
+  <div class="needs-bar" id="needs-tracker"></div>
+
+  <!-- Main Board View -->
+  <main id="board-view">
+    <div class="list-container" id="player-list"></div>
+  </main>
+
+  <!-- Roster View -->
+  <main id="roster-view">
+    <div id="bye-conflict-box"></div>
+    <div class="section-head">Starting Lineup</div>
+    <div id="starting-slots"></div>
+    <div class="section-head">Bench / Reserves</div>
+    <div id="bench-slots"></div>
+  </main>
+
+  <!-- Player Specific Recommendation Modal -->
+  <div class="modal-overlay" id="player-modal" onclick="closePlayerModal(event)">
+    <div class="modal-sheet" onclick="event.stopPropagation()">
+      <div class="modal-handle"></div>
+      <div class="modal-head">
+        <div class="modal-title">💡 Turn Strategy & Analysis</div>
+        <button class="close-btn" onclick="togglePlayerModal(false)">✕</button>
+      </div>
+      <div id="player-advisor-details"></div>
+    </div>
+  </div>
+
+  <!-- General Help & Settings Modal -->
+  <div class="modal-overlay" id="help-modal" onclick="closeHelpModal(event)">
+    <div class="modal-sheet" onclick="event.stopPropagation()">
+      <div class="modal-handle"></div>
+      <div class="modal-head">
+        <div class="modal-title">⚙️ League Setup & AI Key</div>
+        <button class="close-btn" onclick="toggleHelpModal(false)">✕</button>
+      </div>
+
+      <div class="explain-card">
+        <div class="form-group">
+          <label>League Size</label>
+          <select id="league-size" class="input-field" onchange="changeLeagueConfig()">
+            <option value="10">10 Teams</option>
+            <option value="12">12 Teams</option>
+            <option value="14">14 Teams</option>
+            <option value="16" selected>16 Teams</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Your Draft Slot (1 = 1st Overall)</label>
+          <input type="number" id="draft-slot" class="input-field" min="1" max="16" value="1" onchange="changeLeagueConfig()" />
+        </div>
+
+        <div class="form-group">
+          <label>Gemini API Key (Optional for live LLM advice)</label>
+          <input type="password" id="api-key" class="input-field" placeholder="Paste AI Studio API Key..." onchange="saveApiKey()" />
+          <p style="font-size:11px; color:var(--text-sub); margin-top:4px;">Get a free key at aistudio.google.com. Stored locally in your browser only.</p>
+        </div>
+      </div>
+
+      <div class="explain-card">
+        <h4 style="color:var(--primary);">🎯 Full PPR Weighting</h4>
+        <p>This draft board prioritizes target share, receptions, and pass-catching backs over standard two-down goal-line runners.</p>
+      </div>
+
+      <div class="explain-card">
+        <h4 style="color:var(--gold);">⚡ Turn Gap Awareness</h4>
+        <p>Picking at slot 1 in a 16-team snake gives you back-to-back picks (e.g., #32 & #33), followed by a 30-pick drought. The advisor warns you to secure thin positions before the turn runs out.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-bar">
+    <div class="nav-tab active" id="tab-board" onclick="switchView('board')">
+      <span class="nav-icon">📋</span>
+      <span>Draft Board</span>
+    </div>
+    <div class="nav-tab" id="tab-roster" onclick="switchView('roster')">
+      <span class="nav-icon">🛡️</span>
+      <span>My Team (<span id="my-count">0</span>)</span>
+    </div>
+  </nav>
+
+  <script>
+    const initialDataset = [
+      {"id": 1, "rank": 1, "name": "Ja'Marr Chase", "team": "CIN", "pos": "WR", "pos_raw": "WR1", "tier": "1", "bye": "6", "vs_adp": "+2", "drafted": false, "mine": false},
+      {"id": 2, "rank": 2, "name": "Jahmyr Gibbs", "team": "DET", "pos": "RB", "pos_raw": "RB1", "tier": "1", "bye": "6", "vs_adp": "-1", "drafted": false, "mine": false},
+      {"id": 3, "rank": 3, "name": "Puka Nacua", "team": "LAR", "pos": "WR", "pos_raw": "WR2", "tier": "1", "bye": "11", "vs_adp": "+1", "drafted": false, "mine": false},
+      {"id": 4, "rank": 4, "name": "Bijan Robinson", "team": "ATL", "pos": "RB", "pos_raw": "RB2", "tier": "1", "bye": "11", "vs_adp": "-2", "drafted": false, "mine": false},
+      {"id": 5, "rank": 5, "name": "Jaxon Smith-Njigba", "team": "SEA", "pos": "WR", "pos_raw": "WR3", "tier": "1", "bye": "11", "vs_adp": "+1", "drafted": false, "mine": false},
+      {"id": 6, "rank": 6, "name": "Amon-Ra St. Brown", "team": "DET", "pos": "WR", "pos_raw": "WR4", "tier": "1", "bye": "6", "vs_adp": "+2", "drafted": false, "mine": false},
+      {"id": 7, "rank": 7, "name": "CeeDee Lamb", "team": "DAL", "pos": "WR", "pos_raw": "WR5", "tier": "2", "bye": "14", "vs_adp": "+5", "drafted": false, "mine": false},
+      {"id": 8, "rank": 8, "name": "Christian McCaffrey", "team": "SF", "pos": "RB", "pos_raw": "RB3", "tier": "2", "bye": "8", "vs_adp": "-3", "drafted": false, "mine": false},
+      {"id": 9, "rank": 9, "name": "Justin Jefferson", "team": "MIN", "pos": "WR", "pos_raw": "WR6", "tier": "2", "bye": "6", "vs_adp": "+4", "drafted": false, "mine": false},
+      {"id": 10, "rank": 10, "name": "Jonathan Taylor", "team": "IND", "pos": "RB", "pos_raw": "RB4", "tier": "2", "bye": "13", "vs_adp": "-3", "drafted": false, "mine": false},
+      {"id": 11, "rank": 11, "name": "Drake London", "team": "ATL", "pos": "WR", "pos_raw": "WR7", "tier": "2", "bye": "11", "vs_adp": "+6", "drafted": false, "mine": false},
+      {"id": 12, "rank": 12, "name": "A.J. Brown", "team": "NE", "pos": "WR", "pos_raw": "WR8", "tier": "3", "bye": "11", "vs_adp": "+8", "drafted": false, "mine": false},
+      {"id": 13, "rank": 13, "name": "Nico Collins", "team": "HOU", "pos": "WR", "pos_raw": "WR9", "tier": "3", "bye": "8", "vs_adp": "+12", "drafted": false, "mine": false},
+      {"id": 14, "rank": 14, "name": "Ashton Jeanty", "team": "LV", "pos": "RB", "pos_raw": "RB5", "tier": "3", "bye": "13", "vs_adp": "-4", "drafted": false, "mine": false},
+      {"id": 15, "rank": 15, "name": "Chase Brown", "team": "CIN", "pos": "RB", "pos_raw": "RB6", "tier": "3", "bye": "6", "vs_adp": "0", "drafted": false, "mine": false},
+      {"id": 16, "rank": 16, "name": "James Cook III", "team": "BUF", "pos": "RB", "pos_raw": "RB7", "tier": "3", "bye": "7", "vs_adp": "-7", "drafted": false, "mine": false},
+      {"id": 17, "rank": 17, "name": "Trey McBride", "team": "ARI", "pos": "TE", "pos_raw": "TE1", "tier": "3", "bye": "14", "vs_adp": "+4", "drafted": false, "mine": false},
+      {"id": 18, "rank": 18, "name": "George Pickens", "team": "DAL", "pos": "WR", "pos_raw": "WR10", "tier": "3", "bye": "14", "vs_adp": "+6", "drafted": false, "mine": false},
+      {"id": 19, "rank": 19, "name": "Brock Bowers", "team": "LV", "pos": "TE", "pos_raw": "TE2", "tier": "3", "bye": "13", "vs_adp": "+3", "drafted": false, "mine": false},
+      {"id": 20, "rank": 20, "name": "Chris Olave", "team": "NO", "pos": "WR", "pos_raw": "WR11", "tier": "3", "bye": "8", "vs_adp": "+8", "drafted": false, "mine": false},
+      {"id": 21, "rank": 21, "name": "De'Von Achane", "team": "MIA", "pos": "RB", "pos_raw": "RB8", "tier": "3", "bye": "6", "vs_adp": "-10", "drafted": false, "mine": false},
+      {"id": 22, "rank": 22, "name": "Rashee Rice", "team": "KC", "pos": "WR", "pos_raw": "WR12", "tier": "3", "bye": "5", "vs_adp": "+4", "drafted": false, "mine": false},
+      {"id": 23, "rank": 23, "name": "DeVonta Smith", "team": "PHI", "pos": "WR", "pos_raw": "WR13", "tier": "3", "bye": "10", "vs_adp": "+11", "drafted": false, "mine": false},
+      {"id": 24, "rank": 24, "name": "Omarion Hampton", "team": "LAC", "pos": "RB", "pos_raw": "RB9", "tier": "4", "bye": "7", "vs_adp": "-8", "drafted": false, "mine": false},
+      {"id": 25, "rank": 25, "name": "Josh Allen", "team": "BUF", "pos": "QB", "pos_raw": "QB1", "tier": "4", "bye": "7", "vs_adp": "-2", "drafted": false, "mine": false},
+      {"id": 26, "rank": 26, "name": "Saquon Barkley", "team": "PHI", "pos": "RB", "pos_raw": "RB10", "tier": "4", "bye": "10", "vs_adp": "-12", "drafted": false, "mine": false},
+      {"id": 27, "rank": 27, "name": "Malik Nabers", "team": "NYG", "pos": "WR", "pos_raw": "WR14", "tier": "4", "bye": "8", "vs_adp": "+2", "drafted": false, "mine": false},
+      {"id": 28, "rank": 28, "name": "Zay Flowers", "team": "BAL", "pos": "WR", "pos_raw": "WR15", "tier": "4", "bye": "13", "vs_adp": "+7", "drafted": false, "mine": false},
+      {"id": 29, "rank": 29, "name": "Kenneth Walker III", "team": "KC", "pos": "RB", "pos_raw": "RB11", "tier": "4", "bye": "5", "vs_adp": "-10", "drafted": false, "mine": false},
+      {"id": 30, "rank": 30, "name": "Garrett Wilson", "team": "NYJ", "pos": "WR", "pos_raw": "WR16", "tier": "4", "bye": "13", "vs_adp": "+9", "drafted": false, "mine": false},
+      {"id": 31, "rank": 31, "name": "Lamar Jackson", "team": "BAL", "pos": "QB", "pos_raw": "QB2", "tier": "4", "bye": "13", "vs_adp": "+10", "drafted": false, "mine": false},
+      {"id": 32, "rank": 32, "name": "Tetairoa McMillan", "team": "CAR", "pos": "WR", "pos_raw": "WR17", "tier": "4", "bye": "5", "vs_adp": "+6", "drafted": false, "mine": false},
+      {"id": 33, "rank": 33, "name": "Tee Higgins", "team": "CIN", "pos": "WR", "pos_raw": "WR18", "tier": "4", "bye": "6", "vs_adp": "+9", "drafted": false, "mine": false},
+      {"id": 34, "rank": 34, "name": "Ladd McConkey", "team": "LAC", "pos": "WR", "pos_raw": "WR19", "tier": "4", "bye": "7", "vs_adp": "+12", "drafted": false, "mine": false},
+      {"id": 35, "rank": 35, "name": "Emeka Egbuka", "team": "TB", "pos": "WR", "pos_raw": "WR20", "tier": "5", "bye": "10", "vs_adp": "+2", "drafted": false, "mine": false},
+      {"id": 36, "rank": 36, "name": "Colston Loveland", "team": "CHI", "pos": "TE", "pos_raw": "TE3", "tier": "5", "bye": "10", "vs_adp": "+7", "drafted": false, "mine": false},
+      {"id": 37, "rank": 37, "name": "Derrick Henry", "team": "BAL", "pos": "RB", "pos_raw": "RB12", "tier": "5", "bye": "13", "vs_adp": "-19", "drafted": false, "mine": false},
+      {"id": 38, "rank": 38, "name": "Jaylen Waddle", "team": "DEN", "pos": "WR", "pos_raw": "WR21", "tier": "5", "bye": "10", "vs_adp": "+9", "drafted": false, "mine": false},
+      {"id": 39, "rank": 39, "name": "Jeremiyah Love", "team": "ARI", "pos": "RB", "pos_raw": "RB13", "tier": "5", "bye": "14", "vs_adp": "-12", "drafted": false, "mine": false},
+      {"id": 40, "rank": 40, "name": "Drake Maye", "team": "NE", "pos": "QB", "pos_raw": "QB3", "tier": "5", "bye": "11", "vs_adp": "+12", "drafted": false, "mine": false},
+      {"id": 41, "rank": 41, "name": "Breece Hall", "team": "NYJ", "pos": "RB", "pos_raw": "RB14", "tier": "5", "bye": "13", "vs_adp": "-8", "drafted": false, "mine": false},
+      {"id": 42, "rank": 42, "name": "Kyren Williams", "team": "LAR", "pos": "RB", "pos_raw": "RB15", "tier": "5", "bye": "11", "vs_adp": "-11", "drafted": false, "mine": false},
+      {"id": 43, "rank": 43, "name": "Josh Jacobs", "team": "GB", "pos": "RB", "pos_raw": "RB16", "tier": "5", "bye": "11", "vs_adp": "-13", "drafted": false, "mine": false},
+      {"id": 44, "rank": 44, "name": "Terry McLaurin", "team": "WAS", "pos": "WR", "pos_raw": "WR22", "tier": "5", "bye": "7", "vs_adp": "+10", "drafted": false, "mine": false},
+      {"id": 45, "rank": 45, "name": "Joe Burrow", "team": "CIN", "pos": "QB", "pos_raw": "QB4", "tier": "5", "bye": "6", "vs_adp": "+12", "drafted": false, "mine": false},
+      {"id": 46, "rank": 46, "name": "Javonte Williams", "team": "DAL", "pos": "RB", "pos_raw": "RB17", "tier": "5", "bye": "14", "vs_adp": "-14", "drafted": false, "mine": false},
+      {"id": 47, "rank": 47, "name": "Luther Burden III", "team": "CHI", "pos": "WR", "pos_raw": "WR23", "tier": "5", "bye": "10", "vs_adp": "+4", "drafted": false, "mine": false},
+      {"id": 48, "rank": 48, "name": "Jayden Daniels", "team": "WAS", "pos": "QB", "pos_raw": "QB5", "tier": "5", "bye": "7", "vs_adp": "+12", "drafted": false, "mine": false},
+      {"id": 49, "rank": 49, "name": "Davante Adams", "team": "LAR", "pos": "WR", "pos_raw": "WR24", "tier": "5", "bye": "11", "vs_adp": "0", "drafted": false, "mine": false},
+      {"id": 50, "rank": 50, "name": "Travis Etienne Jr.", "team": "NO", "pos": "RB", "pos_raw": "RB18", "tier": "5", "bye": "8", "vs_adp": "-10", "drafted": false, "mine": false}
+    ];
+
+    const STORAGE_KEY = 'fantasy_draft_pro_2026_v7';
+    let players = JSON.parse(localStorage.getItem(STORAGE_KEY)) || initialDataset.map(p => ({ ...p, drafted: false, mine: false }));
+    let leagueSize = parseInt(localStorage.getItem('fantasy_league_size')) || 16;
+    let draftSlot = parseInt(localStorage.getItem('fantasy_draft_slot')) || 1;
+    let apiKey = localStorage.getItem('fantasy_gemini_key') || '';
+    let activeFilter = 'ALL';
+    let hideTaken = false;
+
+    // Initialize inputs
+    document.getElementById('league-size').value = leagueSize.toString();
+    document.getElementById('draft-slot').value = draftSlot.toString();
+    document.getElementById('api-key').value = apiKey;
+
+    function saveApiKey() {
+      apiKey = document.getElementById('api-key').value.trim();
+      localStorage.setItem('fantasy_gemini_key', apiKey);
+    }
+
+    function changeLeagueConfig() {
+      leagueSize = parseInt(document.getElementById('league-size').value);
+      draftSlot = parseInt(document.getElementById('draft-slot').value) || 1;
+      localStorage.setItem('fantasy_league_size', leagueSize);
+      localStorage.setItem('fantasy_draft_slot', draftSlot);
+      updateTurnStatus();
+      updateSmartRecommendation();
+    }
+
+    // Modal Control
+    function toggleHelpModal(show) { document.getElementById('help-modal').classList.toggle('open', show); }
+    function closeHelpModal(e) { if (e.target.id === 'help-modal') toggleHelpModal(false); }
+    function togglePlayerModal(show) { document.getElementById('player-modal').classList.toggle('open', show); }
+    function closePlayerModal(e) { if (e.target.id === 'player-modal') togglePlayerModal(false); }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(players));
+      updateTopTracker();
+      updateTurnStatus();
+      updateSmartRecommendation();
+    }
+
+    function toggleDraft(id, isMine) {
+      const p = players.find(x => x.id === id);
+      if (!p) return;
+      if (p.drafted) {
+        p.drafted = false;
+        p.mine = false;
+      } else {
+        p.drafted = true;
+        p.mine = isMine;
+      }
+      saveState();
+      render();
+    }
+
+    function resetBoard() {
+      if (confirm("Reset the draft board and clear all picks?")) {
+        players.forEach(p => { p.drafted = false; p.mine = false; });
+        saveState();
+        render();
+      }
+    }
+
+    function setPosFilter(pos) {
+      activeFilter = pos;
+      document.querySelectorAll('.filter-chip').forEach(btn => {
+        if (btn.id !== 'btn-hide') btn.classList.toggle('active', btn.innerText === pos);
+      });
+      render();
+    }
+
+    function toggleHideTaken() {
+      hideTaken = !hideTaken;
+      document.getElementById('btn-hide').classList.toggle('active', hideTaken);
+      render();
+    }
+
+    function switchView(view) {
+      document.getElementById('board-view').style.display = view === 'board' ? 'block' : 'none';
+      document.getElementById('roster-view').style.display = view === 'roster' ? 'block' : 'none';
+      document.getElementById('tab-board').classList.toggle('active', view === 'board');
+      document.getElementById('tab-roster').classList.toggle('active', view === 'roster');
+      if (view === 'roster') renderRoster();
+    }
+
+    // Snake Draft Math Engine
+    function calculateSnakePicks(slot, teams, totalRounds = 16) {
+      const picks = [];
+      for (let r = 1; r <= totalRounds; r++) {
+        const isEven = r % 2 === 0;
+        const pick = isEven ? (r * teams - slot + 1) : ((r - 1) * teams + slot);
+        picks.push({ round: r, pickNumber: pick });
+      }
+      return picks;
+    }
+
+    function getDraftState() {
+      const totalDrafted = players.filter(p => p.drafted).length;
+      const currentOverallPick = totalDrafted + 1;
+      const currentRound = Math.floor((currentOverallPick - 1) / leagueSize) + 1;
+      
+      const allMyPicks = calculateSnakePicks(draftSlot, leagueSize, 16);
+      const upcoming = allMyPicks.filter(p => p.pickNumber >= currentOverallPick);
+      const nextPick = upcoming[0] ? upcoming[0].pickNumber : null;
+      const followingPick = upcoming[1] ? upcoming[1].pickNumber : null;
+      const picksUntilMyTurn = nextPick ? Math.max(0, nextPick - currentOverallPick) : 0;
+
+      // Gap after turn
+      let gapAfterTurn = 0;
+      if (nextPick && followingPick) {
+        if (followingPick === nextPick + 1) {
+          // Back to back turn!
+          const thirdPick = upcoming[2] ? upcoming[2].pickNumber : null;
+          gapAfterTurn = thirdPick ? (thirdPick - followingPick - 1) : (leagueSize * 2 - 2);
+        } else {
+          gapAfterTurn = followingPick - nextPick - 1;
+        }
+      }
+
+      return {
+        currentOverallPick,
+        currentRound,
+        nextPick,
+        followingPick,
+        picksUntilMyTurn,
+        gapAfterTurn,
+        allMyPicks
+      };
+    }
+
+    function updateTurnStatus() {
+      const state = getDraftState();
+      document.getElementById('stat-current-pick').innerText = `#${state.currentOverallPick}`;
+      document.getElementById('stat-current-round').innerText = `Rd ${state.currentRound}`;
+      
+      if (state.nextPick) {
+        const nextStr = state.followingPick ? `#${state.nextPick}, #${state.followingPick}` : `#${state.nextPick}`;
+        document.getElementById('stat-next-picks').innerText = nextStr;
+        document.getElementById('stat-turn-gap').innerText = `${state.picksUntilMyTurn} picks away`;
+      } else {
+        document.getElementById('stat-next-picks').innerText = `Done`;
+        document.getElementById('stat-turn-gap').innerText = `0`;
+      }
+    }
+
+    // Recommendation & Full PPR Logic
+    function updateSmartRecommendation() {
+      const container = document.getElementById('smart-recommendation-container');
+      const available = players.filter(p => !p.drafted);
+      if (available.length === 0) {
+        container.innerHTML = '';
+        return;
+      }
+
+      const state = getDraftState();
+      const myPlayers = players.filter(p => p.mine);
+      const qbCount = myPlayers.filter(p => p.pos === 'QB').length;
+      const rbCount = myPlayers.filter(p => p.pos === 'RB').length;
+      const wrCount = myPlayers.filter(p => p.pos === 'WR').length;
+      const teCount = myPlayers.filter(p => p.pos === 'TE').length;
+
+      let neededPositions = [];
+      // Heavy Full-PPR Bias: Ensure WR and pass-catchers prioritized
+      if (wrCount < 2) neededPositions.push('WR');
+      if (rbCount < 2) neededPositions.push('RB');
+      if (teCount < 1) neededPositions.push('TE');
+      if (qbCount < 1) neededPositions.push('QB');
+      if (neededPositions.length === 0) neededPositions = ['WR', 'RB', 'TE', 'QB'];
+
+      const bpa = available[0];
+      const bestNeed = available.find(p => neededPositions.includes(p.pos)) || bpa;
+
+      const sameTierRemaining = available.filter(p => p.pos === bestNeed.pos && p.tier === bestNeed.tier).length;
+      const scarcityLimit = leagueSize >= 14 ? 2 : 1;
+      
+      let alertText = "";
+      if (state.picksUntilMyTurn === 0) {
+        alertText = `🎯 YOU ARE ON THE CLOCK! (Slot ${draftSlot})`;
+      } else if (sameTierRemaining <= scarcityLimit) {
+        alertText = `⚠️ Tier ${bestNeed.tier} ${bestNeed.pos} cliff! ${state.picksUntilMyTurn} picks till your turn.`;
+      } else {
+        alertText = `Top PPR Target: Tier ${bestNeed.tier} ${bestNeed.pos} (${state.picksUntilMyTurn} picks away)`;
+      }
+
+      // 1. Build Banner
+      container.innerHTML = `
+        <div class="smart-banner" onclick="togglePlayerModal(true)">
+          <div class="smart-banner-content">
+            <div class="smart-banner-tag">
+              <span>💡 FULL PPR ADVISOR</span>
+              <span class="info-pill">Analysis ℹ️</span>
+            </div>
+            <div class="smart-banner-title">${bestNeed.name} · ${bestNeed.pos_raw} (${bestNeed.team})</div>
+            <div class="smart-banner-sub">${alertText}</div>
+          </div>
+          <button class="smart-banner-btn" onclick="event.stopPropagation(); toggleDraft(${bestNeed.id}, true)">Draft</button>
+        </div>
+      `;
+
+      // 2. Build Specific Details
+      const detailsBox = document.getElementById('player-advisor-details');
+      
+      let turnGapWarning = `<b>Turn Forecast:</b> You pick again at <b>#${state.nextPick}</b>. After this turn, you will wait <b>${state.gapAfterTurn} picks</b>. ${state.gapAfterTurn >= 20 ? 'Do not count on talent remaining at thin positions—reach slightly for premium WR/RB volume!' : ''}`;
+
+      detailsBox.innerHTML = `
+        <div style="margin-bottom: 16px;">
+          <div style="font-size:20px; font-weight:800; color:#fff; margin-bottom: 4px;">${bestNeed.name}</div>
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <span class="pos-tag pos-${bestNeed.pos}">${bestNeed.pos_raw}</span>
+            <span style="font-size:13px; color:var(--primary); font-weight:700;">${bestNeed.team} · Bye ${bestNeed.bye}</span>
+            <span style="font-size:12px; color:var(--text-sub); border: 1px solid var(--surface-border); padding: 2px 6px; border-radius: 4px;">Rank #${bestNeed.rank}</span>
+          </div>
+        </div>
+        
+        <div class="explain-card" style="border-left: 3px solid var(--gold);">
+          <h4>⚡ Snake Turn Forecast</h4>
+          <p>${turnGapWarning}</p>
+        </div>
+
+        <div class="explain-card" style="border-left: 3px solid var(--primary);">
+          <h4>🎯 Full PPR Roster Fit</h4>
+          <p>${neededPositions.includes(bestNeed.pos) ? `Fills high-priority starting slot (${bestNeed.pos}). Target volume is crucial in this 16-team format.` : `High-value Best Player Available (BPA) target.`}</p>
+        </div>
+        
+        <div class="explain-card" style="border-left: 3px solid ${sameTierRemaining <= scarcityLimit ? 'var(--reach-red)' : 'var(--steal-green)'};">
+          <h4>📊 Tier Scarcity (${bestNeed.pos})</h4>
+          <p><b>Tier ${bestNeed.tier}:</b> ${sameTierRemaining} players left in this tier. ${sameTierRemaining <= scarcityLimit ? `⚠️ Positional cliff imminent before your next 30-pick cycle.` : `Stable tier depth.`}</p>
+        </div>
+
+        <div style="display:flex; gap:8px; margin-top:14px;">
+          <button class="smart-banner-btn" style="flex:1; padding:12px; font-size:14px; border-radius:10px;" onclick="toggleDraft(${bestNeed.id}, true); togglePlayerModal(false);">Draft ${bestNeed.name}</button>
+          <button class="icon-btn" style="padding:12px; font-size:13px; color:var(--primary);" onclick="askGeminiAdvisor()">✨ Ask Live AI</button>
+        </div>
+
+        <div id="ai-live-response" style="display:none;" class="ai-live-box"></div>
+      `;
+    }
+
+    // Call Live Gemini API if Key is present
+    async function askGeminiAdvisor() {
+      const responseBox = document.getElementById('ai-live-response');
+      responseBox.style.display = 'block';
+      
+      if (!apiKey) {
+        responseBox.innerHTML = `⚠️ No API Key found. Add your free Gemini API key in <b>⚙️ Settings</b> to get live real-time LLM draft advice.`;
+        return;
+      }
+
+      responseBox.innerHTML = `<i>🧠 Analyzing 16-team board, turn gaps, and full PPR values...</i>`;
+
+      const state = getDraftState();
+      const myRoster = players.filter(p => p.mine).map(p => `${p.name} (${p.pos})`);
+      const topWR = players.filter(p => !p.drafted && p.pos === 'WR').slice(0, 4).map(p => `${p.name} (T${p.tier})`);
+      const topRB = players.filter(p => !p.drafted && p.pos === 'RB').slice(0, 4).map(p => `${p.name} (T${p.tier})`);
+      const topTE = players.filter(p => !p.drafted && p.pos === 'TE').slice(0, 3).map(p => `${p.name} (T${p.tier})`);
+      const topQB = players.filter(p => !p.drafted && p.pos === 'QB').slice(0, 3).map(p => `${p.name} (T${p.tier})`);
+
+      const prompt = `
+You are an expert fantasy football draft analyst.
+- Format: ${leagueSize} teams, FULL PPR (1 point per reception), Snake draft.
+- User Draft Slot: Pick ${draftSlot}
+- Current Draft State: Overall Pick #${state.currentOverallPick} (Round ${state.currentRound})
+- User Next Picks: #${state.nextPick} and #${state.followingPick} (Drought after this turn: ${state.gapAfterTurn} picks)
+- User's Drafted Team: ${myRoster.length > 0 ? myRoster.join(', ') : 'None yet'}
+- Top Available Players:
+  * WRs: ${topWR.join(', ')}
+  * RBs: ${topRB.join(', ')}
+  * TEs: ${topTE.join(', ')}
+  * QBs: ${topQB.join(', ')}
+
+Provide 3 concise, punchy bullet points advising who the user should target on this turn. Heavily weight target volume and account for the huge ${state.gapAfterTurn}-pick wait after the turn. Keep total response under 100 words.`;
+
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+        });
+        const data = await res.json();
+        if (data.candidates && data.candidates[0].content.parts[0].text) {
+          responseBox.innerHTML = `<b>✨ AI Strategy Insight:</b><br/>` + data.candidates[0].content.parts[0].text;
+        } else {
+          responseBox.innerHTML = `⚠️ Error fetching advice: ${data.error ? data.error.message : 'Unknown error'}`;
+        }
+      } catch (err) {
+        responseBox.innerHTML = `⚠️ Network error calling Gemini API: ${err.message}`;
+      }
+    }
+
+    function updateTopTracker() {
+      const tracker = document.getElementById('needs-tracker');
+      const myPlayers = players.filter(p => p.mine);
+      document.getElementById('my-count').innerText = myPlayers.length;
+
+      const qbCount = myPlayers.filter(p => p.pos === 'QB').length;
+      const rbCount = myPlayers.filter(p => p.pos === 'RB').length;
+      const wrCount = myPlayers.filter(p => p.pos === 'WR').length;
+      const teCount = myPlayers.filter(p => p.pos === 'TE').length;
+      const kCount = myPlayers.filter(p => p.pos === 'K').length;
+      const dstCount = myPlayers.filter(p => p.pos === 'DST').length;
+
+      const flexEligible = rbCount + wrCount + teCount;
+      const flexFilled = (rbCount >= 2 && wrCount >= 2 && teCount >= 1 && flexEligible >= 6);
+
+      tracker.innerHTML = `
+        <div class="need-pill ${qbCount >= 1 ? 'filled' : ''}">QB: ${qbCount}/1</div>
+        <div class="need-pill ${rbCount >= 2 ? 'filled' : ''}">RB: ${rbCount}/2</div>
+        <div class="need-pill ${wrCount >= 2 ? 'filled' : ''}">WR: ${wrCount}/2</div>
+        <div class="need-pill ${teCount >= 1 ? 'filled' : ''}">TE: ${teCount}/1</div>
+        <div class="need-pill ${flexFilled ? 'filled' : ''}">FLEX: ${flexFilled ? '1/1' : '0/1'}</div>
+        <div class="need-pill ${kCount >= 1 ? 'filled' : ''}">K: ${kCount}/1</div>
+        <div class="need-pill ${dstCount >= 1 ? 'filled' : ''}">DST: ${dstCount}/1</div>
+      `;
+    }
+
+    function getValueBadge(vsAdpStr) {
+      if (!vsAdpStr || vsAdpStr === '-') return '';
+      const val = parseInt(vsAdpStr);
+      if (isNaN(val)) return '';
+
+      if (val >= 10) return `<span class="val-badge val-great-steal">🔥 +${val} STEAL</span>`;
+      if (val >= 4) return `<span class="val-badge val-slight-steal">📈 +${val} Val</span>`;
+      if (val <= -10) return `<span class="val-badge val-reach">⚠️ ${val} Reach</span>`;
+      return `<span style="font-size:10.5px; color:${val >= 0 ? '#34d399' : '#f87171'}; font-weight:700;">(${val >= 0 ? '+' : ''}${val})</span>`;
+    }
+
+    function render() {
+      const search = document.getElementById('search').value.toLowerCase();
+      const list = document.getElementById('player-list');
+      list.innerHTML = '';
+
+      const filtered = players
+        .filter(p => activeFilter === 'ALL' || p.pos === activeFilter)
+        .filter(p => !hideTaken || !p.drafted)
+        .filter(p => p.name.toLowerCase().includes(search) || p.team.toLowerCase().includes(search) || p.pos_raw.toLowerCase().includes(search));
+
+      filtered.forEach(p => {
+        const card = document.createElement('div');
+        card.className = `player-card ${p.drafted ? 'taken' : ''} ${p.mine ? 'mine-card' : ''}`;
+        
+        const valueBadge = getValueBadge(p.vs_adp);
+        const tierBadge = `<span class="tier-badge">T${p.tier}</span>`;
+
+        card.innerHTML = `
+          <div class="player-left">
+            <div class="rank-col">
+              <span class="adp-num">${p.rank}</span>
+              <span class="adp-lbl">RK</span>
+            </div>
+            <span class="pos-tag pos-${p.pos}">${p.pos_raw}</span>
+            <div class="p-info">
+              <div class="p-header-line">
+                <span class="p-name">${p.name}</span>
+                ${tierBadge}
+                ${valueBadge}
+              </div>
+              <div class="p-sub">
+                <span>${p.team}</span>
+                <span>·</span>
+                <span>Bye ${p.bye}</span>
+                ${p.mine ? '<span>·</span> <b style="color:#34d399;">(Drafted)</b>' : ''}
+              </div>
+            </div>
+          </div>
+          <div class="btn-group">
+            ${!p.drafted ? `
+              <button class="btn-action btn-take" onclick="toggleDraft(${p.id}, false)">Taken</button>
+              <button class="btn-action btn-draft" onclick="toggleDraft(${p.id}, true)">Draft</button>
+            ` : `
+              <button class="btn-action btn-undo" onclick="toggleDraft(${p.id}, false)">Undo</button>
+            `}
+          </div>
+        `;
+        list.appendChild(card);
+      });
+      updateTopTracker();
+      updateTurnStatus();
+      updateSmartRecommendation();
+    }
+
+    function renderRoster() {
+      const startContainer = document.getElementById('starting-slots');
+      const benchContainer = document.getElementById('bench-slots');
+      const conflictBox = document.getElementById('bye-conflict-box');
+      startContainer.innerHTML = '';
+      benchContainer.innerHTML = '';
+      conflictBox.innerHTML = '';
+
+      const myPool = [...players.filter(p => p.mine)];
+      
+      const rosterSlots = [
+        { label: "QB", req: ["QB"], player: null },
+        { label: "RB 1", req: ["RB"], player: null },
+        { label: "RB 2", req: ["RB"], player: null },
+        { label: "WR 1", req: ["WR"], player: null },
+        { label: "WR 2", req: ["WR"], player: null },
+        { label: "TE", req: ["TE"], player: null },
+        { label: "FLEX", req: ["RB", "WR", "TE"], player: null },
+        { label: "K", req: ["K"], player: null },
+        { label: "DST", req: ["DST"], player: null }
+      ];
+
+      rosterSlots.forEach(s => {
+        const idx = myPool.findIndex(p => s.req.includes(p.pos));
+        if (idx !== -1) {
+          s.player = myPool[idx];
+          myPool.splice(idx, 1);
+        }
+      });
+
+      const byeCounts = {};
+      rosterSlots.forEach(s => {
+        if (s.player && s.player.bye && s.player.bye !== 'N/A') {
+          byeCounts[s.player.bye] = (byeCounts[s.player.bye] || 0) + 1;
+        }
+      });
+
+      const conflictedByes = Object.keys(byeCounts).filter(b => byeCounts[b] >= 3);
+      if (conflictedByes.length > 0) {
+        conflictBox.innerHTML = `
+          <div class="conflict-alert-box">
+            <span class="conflict-alert-icon">⚠️</span>
+            <div class="conflict-alert-text">
+              <b>Heavy Bye Week Alert:</b> You have <b>${byeCounts[conflictedByes[0]]} starters</b> off on <b>Week ${conflictedByes[0]}</b>. Stagger your remaining bench picks!
+            </div>
+          </div>
+        `;
+      }
+
+      rosterSlots.forEach(s => {
+        const card = document.createElement('div');
+        const hasConflict = s.player && byeCounts[s.player.bye] >= 3;
+        card.className = `roster-slot-card ${hasConflict ? 'has-conflict' : ''}`;
+        
+        if (s.player) {
+          card.innerHTML = `
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span class="slot-label">${s.label}</span>
+              <span class="pos-tag pos-${s.player.pos}">${s.player.pos_raw}</span>
+              <div>
+                <div class="p-name">${s.player.name}</div>
+                <div class="p-sub">
+                  ${s.player.team} · Bye ${s.player.bye}
+                  ${hasConflict ? `<span class="bye-warn-tag">Week ${s.player.bye} Clashing</span>` : ''}
+                </div>
+              </div>
+            </div>
+            <button class="btn-action btn-take" onclick="toggleDraft(${s.player.id}, false)">Drop</button>
+          `;
+        } else {
+          card.innerHTML = `
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span class="slot-label">${s.label}</span>
+              <span class="empty-text">Empty Starting Slot</span>
+            </div>
+          `;
+        }
+        startContainer.appendChild(card);
+      });
+
+      if (myPool.length === 0) {
+        benchContainer.innerHTML = '<p class="empty-text" style="padding: 8px;">No bench players drafted yet.</p>';
+      } else {
+        myPool.forEach(p => {
+          const card = document.createElement('div');
+          card.className = 'roster-slot-card';
+          card.innerHTML = `
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span class="slot-label" style="color:var(--text-sub);">BN</span>
+              <span class="pos-tag pos-${p.pos}">${p.pos_raw}</span>
+              <div>
+                <div class="p-name">${p.name}</div>
+                <div class="p-sub">${p.team} · Bye ${p.bye}</div>
+              </div>
+            </div>
+            <button class="btn-action btn-take" onclick="toggleDraft(${p.id}, false)">Drop</button>
+          `;
+          benchContainer.appendChild(card);
+        });
+      }
+    }
+
+    function importCSV(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const text = evt.target.result;
+        const lines = text.split('\n');
+        const imported = [];
+        let idCounter = 1;
+
+        for (let i = 1; i < lines.length; i++) {
+          const row = lines[i].split(',').map(s => s.replace(/"/g, '').trim());
+          if (row.length < 5) continue;
+          
+          const rank = parseInt(row[0]) || idCounter;
+          const tier = row[1] || "1";
+          const name = row[2] || "";
+          const team = row[3] || "";
+          const posRaw = row[4] || "";
+          const posMatch = posRaw.match(/^([A-Za-z]+)/);
+          let pos = posMatch ? posMatch[1].toUpperCase() : "FLEX";
+          if (pos === "D") pos = "DST";
+          const bye = row[5] || "N/A";
+          const vsAdp = row[9] || "-";
+
+          if (name && pos) {
+            imported.push({
+              id: rank,
+              rank: rank,
+              tier: tier,
+              name: name,
+              team: team,
+              pos: pos,
+              pos_raw: posRaw,
+              bye: bye,
+              vs_adp: vsAdp,
+              drafted: false,
+              mine: false
+            });
+            idCounter++;
+          }
+        }
+
+        if (imported.length > 0) {
+          players = imported;
+          saveState();
+          render();
+          alert(`Success! Loaded ${imported.length} players from CSV.`);
+        } else {
+          alert("Could not parse file. Ensure it is a valid FantasyPros CSV.");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    saveState();
+    render();
+  </script>
+</body>
+</html>
