@@ -970,7 +970,7 @@ You are an expert fantasy football draft analyst.
 Provide 3 concise, punchy bullet points advising who the user should target on this turn. Heavily weight target volume and account for the huge ${state.gapAfterTurn}-pick wait after the turn. Keep total response under 100 words.`;
 
       try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
