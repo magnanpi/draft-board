@@ -343,10 +343,18 @@
     function toggleHelpModal(show) { document.getElementById('help-modal').classList.toggle('open', show); }
     function closeHelpModal(e) { if (e.target.id === 'help-modal') toggleHelpModal(false); }
     
-    function togglePlayerModal(show) { 
+function togglePlayerModal(show) { 
       const modal = document.getElementById('player-modal');
       modal.classList.toggle('open', show);
-      if (show && apiKey) askGeminiAdvisor();
+      
+      // Clear out any old AI advice when opening the modal
+      if (show) {
+        const responseBox = document.getElementById('ai-live-response');
+        if (responseBox) {
+          responseBox.style.display = 'none';
+          responseBox.innerHTML = '';
+        }
+      }
     }
     function closePlayerModal(e) { if (e.target.id === 'player-modal') togglePlayerModal(false); }
 
