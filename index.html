@@ -9,7 +9,7 @@
   <style>
     :root {
       --bg-dark: #080c14;
-      --surface: rgba(18, 25, 41, 0.82);
+      --surface: rgba(18, 25, 41, 0.85);
       --surface-border: rgba(255, 255, 255, 0.08);
       --surface-active: rgba(28, 38, 62, 0.95);
       --primary: #38bdf8;
@@ -49,7 +49,7 @@
     header {
       position: sticky;
       top: 0;
-      background: rgba(8, 12, 20, 0.92);
+      background: rgba(8, 12, 20, 0.94);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--surface-border);
@@ -154,18 +154,18 @@
       box-shadow: 0 2px 10px var(--primary-glow);
     }
 
-    /* Live Recommendation AI Banner */
+    /* Sticky Live Advisory Banner */
     .smart-banner {
-      margin: 10px 14px 4px 14px;
+      margin: 8px 0 0 0;
       background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%);
       border: 1px solid var(--gold-border);
-      border-radius: 14px;
-      padding: 12px 14px;
+      border-radius: 12px;
+      padding: 9px 12px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
-      box-shadow: 0 4px 20px rgba(251, 191, 36, 0.08);
+      gap: 8px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
       cursor: pointer;
       transition: transform 0.15s, border-color 0.2s;
     }
@@ -173,22 +173,22 @@
     .smart-banner-content {
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      gap: 2px;
       min-width: 0;
       flex: 1;
     }
     .smart-banner-tag {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      font-size: 10.5px;
+      gap: 5px;
+      font-size: 10px;
       font-weight: 800;
       color: var(--gold);
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
     .smart-banner-title {
-      font-size: 14px;
+      font-size: 13.5px;
       font-weight: 700;
       color: #fff;
       white-space: nowrap;
@@ -196,25 +196,27 @@
       text-overflow: ellipsis;
     }
     .smart-banner-sub {
-      font-size: 11.5px;
+      font-size: 11px;
       color: var(--text-sub);
       display: flex;
       align-items: center;
       gap: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .info-pill {
-      font-size: 10px;
+      font-size: 9.5px;
       background: rgba(255, 255, 255, 0.1);
-      padding: 1px 6px;
+      padding: 1px 5px;
       border-radius: 4px;
       color: #e2e8f0;
     }
-
     .smart-banner-btn {
       background: var(--gold);
       color: #000;
-      padding: 8px 12px;
-      border-radius: 9px;
+      padding: 7px 11px;
+      border-radius: 8px;
       border: none;
       font-size: 11.5px;
       font-weight: 800;
@@ -489,7 +491,7 @@
       right: 0;
       height: calc(58px + env(safe-area-inset-bottom, 0px));
       padding-bottom: env(safe-area-inset-bottom, 0px);
-      background: rgba(8, 12, 20, 0.92);
+      background: rgba(8, 12, 20, 0.94);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       border-top: 1px solid var(--surface-border);
@@ -554,10 +556,10 @@
       <button class="filter-chip" onclick="setPosFilter('DST')">DST</button>
       <button class="filter-chip" onclick="toggleHideTaken()" id="btn-hide">Hide Taken</button>
     </div>
-  </header>
 
-  <!-- Auto Recommendation Banner -->
-  <div id="smart-recommendation-container"></div>
+    <!-- Sticky Live AI Advisor Banner -->
+    <div id="smart-recommendation-container"></div>
+  </header>
 
   <!-- Needs Tracker -->
   <div class="needs-bar" id="needs-tracker"></div>
@@ -588,7 +590,7 @@
     </div>
   </div>
 
-  <!-- General Help & Settings Modal -->
+  <!-- General Settings Modal -->
   <div class="modal-overlay" id="help-modal" onclick="closeHelpModal(event)">
     <div class="modal-sheet" onclick="event.stopPropagation()">
       <div class="modal-handle"></div>
@@ -616,7 +618,7 @@
         <div class="form-group">
           <label>Gemini API Key (Optional for live LLM advice)</label>
           <input type="password" id="api-key" class="input-field" placeholder="Paste AI Studio API Key..." onchange="saveApiKey()" />
-          <p style="font-size:11px; color:var(--text-sub); margin-top:4px;">Get a free key at aistudio.google.com. Stored locally in your browser only.</p>
+          <p style="font-size:11px; color:var(--text-sub); margin-top:4px;">Stored locally in your browser only.</p>
         </div>
       </div>
 
@@ -627,16 +629,20 @@
 
       <div class="explain-card">
         <h4 style="color:var(--gold);">⚡ Turn Gap Awareness</h4>
-        <p>Picking at slot 1 in a 16-team snake gives you back-to-back picks (e.g., #32 & #33), followed by a 30-pick drought. The advisor warns you to secure thin positions before the turn runs out.</p>
+        <p>Picking at slot 1 in a 16-team snake gives you back-to-back picks (#32 & #33), followed by a 30-pick drought. The advisor warns you to secure thin positions before the turn runs out.</p>
       </div>
     </div>
   </div>
 
-  <!-- Bottom Navigation -->
+  <!-- 3-Button Bottom Navigation -->
   <nav class="bottom-bar">
     <div class="nav-tab active" id="tab-board" onclick="switchView('board')">
       <span class="nav-icon">📋</span>
       <span>Draft Board</span>
+    </div>
+    <div class="nav-tab" id="tab-ai" onclick="togglePlayerModal(true)">
+      <span class="nav-icon" style="color:var(--gold);">💡</span>
+      <span style="color:var(--gold);">AI Advisor</span>
     </div>
     <div class="nav-tab" id="tab-roster" onclick="switchView('roster')">
       <span class="nav-icon">🛡️</span>
@@ -698,7 +704,7 @@
       {"id": 50, "rank": 50, "name": "Travis Etienne Jr.", "team": "NO", "pos": "RB", "pos_raw": "RB18", "tier": "5", "bye": "8", "vs_adp": "-10", "drafted": false, "mine": false}
     ];
 
-    const STORAGE_KEY = 'fantasy_draft_pro_2026_v7';
+    const STORAGE_KEY = 'fantasy_draft_pro_2026_v8';
     let players = JSON.parse(localStorage.getItem(STORAGE_KEY)) || initialDataset.map(p => ({ ...p, drafted: false, mine: false }));
     let leagueSize = parseInt(localStorage.getItem('fantasy_league_size')) || 16;
     let draftSlot = parseInt(localStorage.getItem('fantasy_draft_slot')) || 1;
@@ -728,7 +734,14 @@
     // Modal Control
     function toggleHelpModal(show) { document.getElementById('help-modal').classList.toggle('open', show); }
     function closeHelpModal(e) { if (e.target.id === 'help-modal') toggleHelpModal(false); }
-    function togglePlayerModal(show) { document.getElementById('player-modal').classList.toggle('open', show); }
+    
+    function togglePlayerModal(show) { 
+      const modal = document.getElementById('player-modal');
+      modal.classList.toggle('open', show);
+      if (show && apiKey) {
+        askGeminiAdvisor();
+      }
+    }
     function closePlayerModal(e) { if (e.target.id === 'player-modal') togglePlayerModal(false); }
 
     function saveState() {
@@ -782,7 +795,7 @@
       if (view === 'roster') renderRoster();
     }
 
-    // Snake Draft Math Engine
+    // Snake Draft Engine
     function calculateSnakePicks(slot, teams, totalRounds = 16) {
       const picks = [];
       for (let r = 1; r <= totalRounds; r++) {
@@ -804,11 +817,9 @@
       const followingPick = upcoming[1] ? upcoming[1].pickNumber : null;
       const picksUntilMyTurn = nextPick ? Math.max(0, nextPick - currentOverallPick) : 0;
 
-      // Gap after turn
       let gapAfterTurn = 0;
       if (nextPick && followingPick) {
         if (followingPick === nextPick + 1) {
-          // Back to back turn!
           const thirdPick = upcoming[2] ? upcoming[2].pickNumber : null;
           gapAfterTurn = thirdPick ? (thirdPick - followingPick - 1) : (leagueSize * 2 - 2);
         } else {
@@ -835,7 +846,7 @@
       if (state.nextPick) {
         const nextStr = state.followingPick ? `#${state.nextPick}, #${state.followingPick}` : `#${state.nextPick}`;
         document.getElementById('stat-next-picks').innerText = nextStr;
-        document.getElementById('stat-turn-gap').innerText = `${state.picksUntilMyTurn} picks away`;
+        document.getElementById('stat-turn-gap').innerText = `${state.picksUntilMyTurn} away`;
       } else {
         document.getElementById('stat-next-picks').innerText = `Done`;
         document.getElementById('stat-turn-gap').innerText = `0`;
@@ -859,7 +870,6 @@
       const teCount = myPlayers.filter(p => p.pos === 'TE').length;
 
       let neededPositions = [];
-      // Heavy Full-PPR Bias: Ensure WR and pass-catchers prioritized
       if (wrCount < 2) neededPositions.push('WR');
       if (rbCount < 2) neededPositions.push('RB');
       if (teCount < 1) neededPositions.push('TE');
@@ -874,14 +884,14 @@
       
       let alertText = "";
       if (state.picksUntilMyTurn === 0) {
-        alertText = `🎯 YOU ARE ON THE CLOCK! (Slot ${draftSlot})`;
+        alertText = `🎯 ON THE CLOCK! (Slot ${draftSlot})`;
       } else if (sameTierRemaining <= scarcityLimit) {
-        alertText = `⚠️ Tier ${bestNeed.tier} ${bestNeed.pos} cliff! ${state.picksUntilMyTurn} picks till your turn.`;
+        alertText = `⚠️ Tier ${bestNeed.tier} cliff! ${state.picksUntilMyTurn} picks away.`;
       } else {
         alertText = `Top PPR Target: Tier ${bestNeed.tier} ${bestNeed.pos} (${state.picksUntilMyTurn} picks away)`;
       }
 
-      // 1. Build Banner
+      // 1. Build Sticky Banner inside Header
       container.innerHTML = `
         <div class="smart-banner" onclick="togglePlayerModal(true)">
           <div class="smart-banner-content">
@@ -898,7 +908,6 @@
 
       // 2. Build Specific Details
       const detailsBox = document.getElementById('player-advisor-details');
-      
       let turnGapWarning = `<b>Turn Forecast:</b> You pick again at <b>#${state.nextPick}</b>. After this turn, you will wait <b>${state.gapAfterTurn} picks</b>. ${state.gapAfterTurn >= 20 ? 'Do not count on talent remaining at thin positions—reach slightly for premium WR/RB volume!' : ''}`;
 
       detailsBox.innerHTML = `
@@ -928,14 +937,14 @@
 
         <div style="display:flex; gap:8px; margin-top:14px;">
           <button class="smart-banner-btn" style="flex:1; padding:12px; font-size:14px; border-radius:10px;" onclick="toggleDraft(${bestNeed.id}, true); togglePlayerModal(false);">Draft ${bestNeed.name}</button>
-          <button class="icon-btn" style="padding:12px; font-size:13px; color:var(--primary);" onclick="askGeminiAdvisor()">✨ Ask Live AI</button>
+          <button class="icon-btn" style="padding:12px; font-size:13px; color:var(--primary);" onclick="askGeminiAdvisor()">✨ Refresh AI Advice</button>
         </div>
 
         <div id="ai-live-response" style="display:none;" class="ai-live-box"></div>
       `;
     }
 
-    // Call Live Gemini API if Key is present
+    // Call Live Gemini API
     async function askGeminiAdvisor() {
       const responseBox = document.getElementById('ai-live-response');
       responseBox.style.display = 'block';
